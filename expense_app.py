@@ -1,3 +1,6 @@
+import json
+from pathlib import Path
+
 import streamlit as st
 
 
@@ -13,19 +16,38 @@ DEFAULT_EXPENSES = [
     {"name": "Painter", "total": 6000.0, "paid": 0.0, "notes": ""},
     {"name": "Handyman", "total": 1100.0, "paid": 1100.0, "notes": "800 + 300"},
     {"name": "Plumber", "total": 3700.0, "paid": 3500.0, "notes": ""},
-    # The source note was written as "- 2260 MAD"; this stores it as 2,260 MAD.
     {"name": "Electrician", "total": 2260.0, "paid": 0.0, "notes": ""},
     {"name": "Carpenter", "total": 10000.0, "paid": 10000.0, "notes": ""},
 ]
+
+DATA_FILE = Path(__file__).with_name("expenses.json")
 
 
 def mad(value: float) -> str:
     return f"{value:,.0f} MAD"
 
 
+def load_expenses() -> list[dict]:
+    if DATA_FILE.exists():
+        try:
+            stored = json.loads(DATA_FILE.read_text(encoding="utf-8"))
+            if isinstance(stored, list):
+                return stored
+        except (json.JSONDecodeError, OSError):
+            pass
+    return [row.copy() for row in DEFAULT_EXPENSES]
+
+
+def save_expenses() -> None:
+    DATA_FILE.write_text(
+        json.dumps(st.session_state.expenses, indent=2, ensure_ascii=False),
+        encoding="utf-8",
+    )
+
+
 def ensure_state() -> None:
     if "expenses" not in st.session_state:
-        st.session_state.expenses = [row.copy() for row in DEFAULT_EXPENSES]
+        st.session_state.expenses = load_expenses()
 
 
 def add_expense() -> None:
@@ -50,6 +72,7 @@ with st.sidebar:
     st.info("Tip: enter amounts as plain numbers. Negative values are supported for credits or refunds.")
     if st.button("Reset to original figures", use_container_width=True):
         st.session_state.expenses = [row.copy() for row in DEFAULT_EXPENSES]
+        save_expenses()
         st.rerun()
 
 total = sum(float(row["total"]) for row in st.session_state.expenses)
@@ -86,6 +109,7 @@ for index, row in enumerate(st.session_state.expenses):
     )
     if cols[5].button("✕", key=f"delete_{index}", help="Delete this expense"):
         delete_expense(index)
+        save_expenses()
         st.rerun()
 
 st.divider()
@@ -95,6 +119,10 @@ summary_cols[0].markdown("**All expenses**")
 summary_cols[1].markdown(f"**{mad(total)}**")
 summary_cols[2].markdown(f"**{mad(paid)}**")
 summary_cols[3].markdown(f"**{mad(remaining)}**")
+
+# Streamlit reruns after every widget change. Saving at the end of each run
+# makes edits survive browser refreshes and app restarts on the same instance.
+save_expenses()
 
 st.markdown(
     """
