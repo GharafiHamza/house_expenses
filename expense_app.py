@@ -160,21 +160,20 @@ if "expenses" not in st.session_state:
         st.error(f"Could not load your expenses from Supabase: {error}")
         st.stop()
 
-with st.sidebar:
-    st.header("Expense tracker")
-    st.caption(st.session_state.user.get("email", "Signed-in user"))
-    st.button("Add expense", use_container_width=True, on_click=add_expense)
-    if st.button("Sign out", use_container_width=True):
-        for key in ("access_token", "refresh_token", "user", "expenses", "saved_ids"):
-            st.session_state.pop(key, None)
-        st.rerun()
-    st.divider()
-    if st.button("Reset to original figures", use_container_width=True):
-        st.session_state.expenses = [{"id": None, **row} for row in DEFAULT_EXPENSES]
-        save_expenses()
-        st.rerun()
-
-st.caption("Edit any amount below — remaining balances and totals update automatically.")
+topbar = st.columns([4.2, 1.1, 1.1, 1.1], vertical_alignment="center")
+topbar[0].markdown("<div class='app-wordmark'>Expenses <span>/ Home renovation</span></div>", unsafe_allow_html=True)
+topbar[0].caption(st.session_state.user.get("email", "Signed-in user"))
+if topbar[1].button("Add", use_container_width=True, on_click=add_expense):
+    st.rerun()
+if topbar[2].button("Reset", use_container_width=True):
+    st.session_state.expenses = [{"id": None, **row} for row in DEFAULT_EXPENSES]
+    save_expenses()
+    st.rerun()
+if topbar[3].button("Sign out", use_container_width=True):
+    for key in ("access_token", "refresh_token", "user", "expenses", "saved_ids"):
+        st.session_state.pop(key, None)
+    st.rerun()
+st.caption("A clear view of what has been spent, what is paid, and what remains.")
 st.subheader("Expenses")
 st.caption("Edit totals, payments, or notes. Remaining is calculated automatically.")
 
@@ -213,48 +212,52 @@ except requests.RequestException as error:
 
 st.markdown("""
 <style>
-:root { --canvas:#f7f6f3; --surface:#fff; --ink:#202124; --muted:#777873; --line:#e6e5e1; --accent:#315c4c; --accent-soft:#e8f0eb; }
+:root { --canvas:#fbfbfa; --surface:#fff; --ink:#1d1d1f; --muted:#86868b; --line:#e7e7e5; --accent:#1d1d1f; --accent-soft:#f2f2f0; }
 .stApp { background:var(--canvas); color:var(--ink); }
-.block-container { max-width:1120px; padding:3.25rem 2rem 5rem; }
+.block-container { max-width:1040px; padding:2rem 2rem 5rem; }
 [data-testid="stHeader"] { background:transparent; }
-[data-testid="stSidebar"] { background:#f1f0ec; border-right:1px solid var(--line); }
-[data-testid="stSidebar"] > div:first-child { padding:2rem 1.25rem; }
-h1 { font-size:clamp(2rem,4vw,3.4rem) !important; letter-spacing:-.055em; line-height:1.02 !important; margin-bottom:.65rem !important; }
-h2,h3 { letter-spacing:-.035em; }
+[data-testid="stSidebar"] { display:none; }
+.app-wordmark { color:var(--ink); font-size:1.15rem; font-weight:700; letter-spacing:-.025em; padding-top:.2rem; }
+.app-wordmark span { color:var(--muted); font-weight:500; }
+h1 { font-size:clamp(2.8rem,7vw,5.4rem) !important; letter-spacing:-.075em; line-height:.95 !important; margin:4.5rem 0 .65rem !important; }
+h2,h3 { letter-spacing:-.04em; }
 [data-testid="stCaptionContainer"] p { color:var(--muted); }
-[data-testid="stMetric"] { background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:1rem 1.1rem; box-shadow:none; }
-[data-testid="stMetricLabel"] { color:var(--muted); font-size:.76rem; text-transform:uppercase; letter-spacing:.08em; }
-[data-testid="stMetricValue"] { color:var(--ink); font-size:clamp(1.35rem,3vw,2rem); letter-spacing:-.04em; }
-[data-testid="stTextInput"] label,[data-testid="stNumberInput"] label { color:var(--muted); font-size:.75rem; font-weight:600; }
-[data-baseweb="input"],[data-baseweb="textarea"] { background:var(--surface); border-color:var(--line); border-radius:7px; }
-[data-baseweb="input"]:focus-within { border-color:var(--accent); box-shadow:0 0 0 1px var(--accent); }
-.stButton > button { min-height:2.7rem; border-radius:7px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-weight:600; transition:background .15s ease,transform .15s ease,border-color .15s ease; }
-.stButton > button:hover { border-color:#c9c8c2; background:#f2f1ed; }
+.topbar { border-bottom:1px solid var(--line); }
+[data-testid="stHorizontalBlock"] { gap:.7rem; }
+.topbar + div { margin-top:0; }
+.stButton > button { min-height:2.45rem; padding:.2rem .85rem; border-radius:7px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:.82rem; font-weight:600; transition:background .15s ease, transform .15s ease; }
+.stButton > button:hover { background:#f1f1ef; border-color:#cfcfcb; }
 .stButton > button:active { transform:scale(.98); }
-[data-testid="stSidebar"] .stButton > button:first-child { background:var(--ink); color:#fff; border-color:var(--ink); }
-[data-testid="stTabs"] button { color:var(--muted); }
-[data-testid="stTabs"] button[aria-selected="true"] { color:var(--ink); }
-[class*="st-key-expense_row_"] { margin:0 0 .75rem; border-color:var(--line) !important; border-radius:12px !important; background:var(--surface); }
-[class*="st-key-expense_row_"] > div { padding:1rem 1.1rem .85rem; }
-[class*="st-key-expense_row_"] [data-testid="stHorizontalBlock"] { gap:.75rem; align-items:end; }
-[class*="st-key-expense_row_"] .stButton > button { min-width:2.7rem; width:2.7rem; padding:0; color:#9b3d37; font-size:1.45rem; line-height:1; }
-.remaining-label { color:var(--muted); font-size:.75rem; font-weight:600; margin:0 0 .42rem; }
-.remaining { padding:.68rem .8rem; min-height:2.7rem; border:1px solid var(--line); border-radius:7px; background:var(--accent-soft); color:var(--accent); font-weight:700; font-variant-numeric:tabular-nums; }
-[data-testid="stAlert"] { border-radius:8px; }
+[data-testid="stMetric"] { background:transparent; border:0; border-bottom:1px solid var(--line); border-radius:0; padding:.9rem 0 1.1rem; box-shadow:none; }
+[data-testid="stMetricLabel"] { color:var(--muted); font-size:.73rem; text-transform:uppercase; letter-spacing:.09em; }
+[data-testid="stMetricValue"] { color:var(--ink); font-size:clamp(1.55rem,3vw,2.25rem); letter-spacing:-.055em; }
+[data-testid="stTextInput"] label,[data-testid="stNumberInput"] label { color:var(--muted); font-size:.72rem; font-weight:600; }
+[data-baseweb="input"],[data-baseweb="textarea"] { background:var(--surface); border-color:var(--line); border-radius:6px; }
+[data-baseweb="input"]:focus-within { border-color:var(--ink); box-shadow:0 0 0 1px var(--ink); }
+[class*="st-key-expense_row_"] { margin:0; border:0 !important; border-bottom:1px solid var(--line) !important; border-radius:0 !important; background:transparent; }
+[class*="st-key-expense_row_"] > div { padding:1.05rem 0 1rem; }
+[class*="st-key-expense_row_"] [data-testid="stHorizontalBlock"] { gap:.8rem; align-items:end; }
+[class*="st-key-expense_row_"] .stButton > button { min-width:2.3rem; width:2.3rem; padding:0; border:0; background:transparent; color:#a13d38; font-size:1.45rem; line-height:1; }
+[class*="st-key-expense_row_"] .stButton > button:hover { background:#fceceb; border:0; }
+.remaining-label { color:var(--muted); font-size:.72rem; font-weight:600; margin:0 0 .42rem; }
+.remaining { padding:.62rem .75rem; min-height:2.45rem; border:1px solid var(--line); border-radius:6px; background:var(--accent-soft); color:var(--ink); font-weight:700; font-variant-numeric:tabular-nums; }
+hr { border-color:var(--line); }
+[data-testid="stAlert"] { border-radius:7px; }
 @media (max-width:760px) {
-  .block-container { padding:1.5rem .85rem 3.5rem; }
-  [data-testid="stMetric"] { padding:.85rem 1rem; }
-  [data-testid="stMetricValue"] { font-size:1.45rem; }
-  [data-testid="stSidebar"] { width:82vw; }
-  h1 { font-size:2.25rem !important; }
-  [class*="st-key-expense_row_"] > div { padding:.95rem .85rem .8rem; }
-  [class*="st-key-expense_row_"] [data-testid="stHorizontalBlock"] { display:grid !important; grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important; gap:.65rem .7rem; }
+  .block-container { padding:1.1rem .9rem 3.5rem; }
+  h1 { font-size:3.35rem !important; margin-top:3.5rem !important; }
+  .app-wordmark { font-size:1rem; }
+  [data-testid="stMetric"] { padding:.75rem 0 1rem; }
+  [data-testid="stMetricValue"] { font-size:1.55rem; }
+  [class*="st-key-expense_row_"] > div { padding:.95rem 0 .8rem; }
+  [class*="st-key-expense_row_"] [data-testid="stHorizontalBlock"] { display:grid !important; grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important; gap:.6rem .7rem; }
   [class*="st-key-expense_row_"] [data-testid="stHorizontalBlock"] > [data-testid="column"] { width:auto !important; flex:none !important; min-width:0 !important; }
   [class*="st-key-expense_row_"] [data-testid="stHorizontalBlock"] > [data-testid="column"]:first-child,[class*="st-key-expense_row_"] [data-testid="stHorizontalBlock"] > [data-testid="column"]:nth-child(5) { grid-column:1 / -1; }
-  [class*="st-key-expense_row_"] .stButton > button { margin-top:1.75rem; }
+  [class*="st-key-expense_row_"] .stButton > button { margin-top:1.65rem; }
 }
 @media (prefers-reduced-motion:reduce) { .stButton > button { transition:none; } }
 </style>
 """, unsafe_allow_html=True)
+
 
 
