@@ -5,7 +5,7 @@ import requests
 import streamlit as st
 
 
-st.set_page_config(page_title="Home renovation expenses", page_icon="💸", layout="wide")
+st.set_page_config(page_title="Home renovation expenses", layout="wide")
 
 DEFAULT_EXPENSES = [
     {"name": "Plasterer", "total": 9200.0, "paid": 9200.0, "notes": ""},
@@ -163,7 +163,7 @@ if "expenses" not in st.session_state:
 with st.sidebar:
     st.header("Expense tracker")
     st.caption(st.session_state.user.get("email", "Signed-in user"))
-    st.button("＋ Add expense", use_container_width=True, on_click=add_expense)
+    st.button("Add expense", use_container_width=True, on_click=add_expense)
     if st.button("Sign out", use_container_width=True):
         for key in ("access_token", "refresh_token", "user", "expenses", "saved_ids"):
             st.session_state.pop(key, None)
@@ -182,12 +182,12 @@ for column, label in zip(header, ["Expense", "Total", "Paid", "Remaining", "Note
 
 for index, row in enumerate(st.session_state.expenses):
     cols = st.columns([2.3, 1.6, 1.6, 1.8, 2.3, 0.6], vertical_alignment="center")
-    row["name"] = cols[0].text_input("Expense name", value=row["name"], key=f"name_{index}", label_visibility="collapsed")
-    row["total"] = cols[1].number_input("Total", min_value=None, value=float(row["total"]), step=100.0, key=f"total_{index}", label_visibility="collapsed")
-    row["paid"] = cols[2].number_input("Paid", min_value=None, value=float(row["paid"]), step=100.0, key=f"paid_{index}", label_visibility="collapsed")
+    row["name"] = cols[0].text_input("Expense name", value=row["name"], key=f"name_{index}", label_visibility="visible")
+    row["total"] = cols[1].number_input("Total", min_value=None, value=float(row["total"]), step=100.0, key=f"total_{index}", label_visibility="visible")
+    row["paid"] = cols[2].number_input("Paid", min_value=None, value=float(row["paid"]), step=100.0, key=f"paid_{index}", label_visibility="visible")
     cols[3].markdown(f"<div class='remaining'>{mad(float(row['total']) - float(row['paid']))}</div>", unsafe_allow_html=True)
-    row["notes"] = cols[4].text_input("Notes", value=row["notes"], key=f"notes_{index}", label_visibility="collapsed")
-    if cols[5].button("✕", key=f"delete_{index}", help="Delete this expense"):
+    row["notes"] = cols[4].text_input("Notes", value=row["notes"], key=f"notes_{index}", label_visibility="visible")
+    if cols[5].button("Delete", key=f"delete_{index}", help="Delete this expense"):
         delete_expense(index)
         save_expenses()
         st.rerun()
@@ -215,7 +215,52 @@ except requests.RequestException as error:
 
 st.markdown("""
 <style>
-[data-testid="stMetric"] { background: #f5f7fb; border: 1px solid #e4e8f0; padding: 1rem; border-radius: 12px; }
-.remaining { padding: .55rem .75rem; background: #f8fafc; border-radius: .35rem; min-height: 2.35rem; }
+:root {
+  --canvas: #f7f6f3;
+  --surface: #ffffff;
+  --ink: #202124;
+  --muted: #777873;
+  --line: #e6e5e1;
+  --accent: #315c4c;
+  --accent-soft: #e8f0eb;
+}
+.stApp { background: var(--canvas); color: var(--ink); }
+.block-container { max-width: 1180px; padding: 3.5rem 2rem 5rem; }
+[data-testid="stHeader"] { background: transparent; }
+[data-testid="stSidebar"] { background: #f1f0ec; border-right: 1px solid var(--line); }
+[data-testid="stSidebar"] > div:first-child { padding: 2rem 1.25rem; }
+h1 { font-size: clamp(2rem, 4vw, 3.4rem) !important; letter-spacing: -0.055em; line-height: 1.02 !important; margin-bottom: .65rem !important; }
+h2, h3 { letter-spacing: -0.035em; }
+[data-testid="stCaptionContainer"] p { color: var(--muted); }
+[data-testid="stHorizontalBlock"] { gap: .8rem; align-items: end; }
+[data-testid="stHorizontalBlock"]:has([data-testid="stMetric"]) { align-items: stretch; }
+[data-testid="stMetric"] { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 1rem 1.1rem; box-shadow: none; }
+[data-testid="stMetricLabel"] { color: var(--muted); font-size: .76rem; text-transform: uppercase; letter-spacing: .08em; }
+[data-testid="stMetricValue"] { color: var(--ink); font-size: clamp(1.35rem, 3vw, 2rem); letter-spacing: -.04em; }
+[data-testid="stTextInput"] label, [data-testid="stNumberInput"] label { color: var(--muted); font-size: .75rem; font-weight: 600; }
+[data-baseweb="input"], [data-baseweb="textarea"] { background: var(--surface); border-color: var(--line); border-radius: 7px; }
+[data-baseweb="input"]:focus-within { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.stButton > button { min-height: 2.7rem; border-radius: 7px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font-weight: 600; transition: background .15s ease, transform .15s ease, border-color .15s ease; }
+.stButton > button:hover { border-color: #c9c8c2; background: #f2f1ed; }
+.stButton > button:active { transform: scale(.98); }
+[data-testid="stSidebar"] .stButton > button:first-child { background: var(--ink); color: white; border-color: var(--ink); }
+[data-testid="stTabs"] button { color: var(--muted); }
+[data-testid="stTabs"] button[aria-selected="true"] { color: var(--ink); }
+.remaining { padding: .68rem .8rem; min-height: 2.7rem; border: 1px solid var(--line); border-radius: 7px; background: var(--accent-soft); color: var(--accent); font-weight: 700; font-variant-numeric: tabular-nums; }
+[data-testid="stAlert"] { border-radius: 8px; }
+@media (max-width: 760px) {
+  .block-container { padding: 1.5rem .9rem 3.5rem; }
+  [data-testid="stHorizontalBlock"] { flex-direction: column !important; align-items: stretch !important; gap: .55rem; }
+  [data-testid="stHorizontalBlock"] > [data-testid="column"] { width: 100% !important; flex: 1 1 auto !important; }
+  [data-testid="stMetric"] { padding: .85rem 1rem; }
+  [data-testid="stMetricValue"] { font-size: 1.45rem; }
+  [data-testid="stSidebar"] { width: 82vw; }
+  h1 { font-size: 2.25rem !important; }
+  .remaining { margin-top: -.15rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stButton > button { transition: none; }
+}
 </style>
 """, unsafe_allow_html=True)
+
