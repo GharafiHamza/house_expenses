@@ -116,6 +116,12 @@ def delete_expense(index: int) -> None:
     st.session_state.expenses.pop(index)
 
 
+def move_expense(index: int, direction: int) -> None:
+    destination = index + direction
+    if 0 <= destination < len(st.session_state.expenses):
+        expenses = st.session_state.expenses
+        expenses[index], expenses[destination] = expenses[destination], expenses[index]
+
 st.title("Home renovation expenses")
 
 if not supabase_url() or not supabase_key():
@@ -160,32 +166,42 @@ if "expenses" not in st.session_state:
         st.error(f"Could not load your expenses from Supabase: {error}")
         st.stop()
 
-topbar = st.columns([4.2, 1.1, 1.1, 1.1], vertical_alignment="center")
+topbar = st.columns([5.8, 1.2], vertical_alignment="center")
 topbar[0].markdown("<div class='app-wordmark'>Expenses <span>/ Home renovation</span></div>", unsafe_allow_html=True)
 topbar[0].caption(st.session_state.user.get("email", "Signed-in user"))
-if topbar[1].button("Add", use_container_width=True, on_click=add_expense):
-    st.rerun()
-if topbar[2].button("Reset", use_container_width=True):
-    st.session_state.expenses = [{"id": None, **row} for row in DEFAULT_EXPENSES]
-    save_expenses()
-    st.rerun()
-if topbar[3].button("Sign out", use_container_width=True):
+if topbar[1].button("Sign out", use_container_width=True):
     for key in ("access_token", "refresh_token", "user", "expenses", "saved_ids"):
         st.session_state.pop(key, None)
     st.rerun()
+
+with st.sidebar:
+    st.markdown("## Actions")
+    st.caption("Keep this panel open while you work through the list.")
+    if st.button("＋  Add expense", use_container_width=True):
+        add_expense()
+        save_expenses()
+        st.rerun()
 st.caption("A clear view of what has been spent, what is paid, and what remains.")
 st.subheader("Expenses")
 st.caption("Edit totals, payments, or notes. Remaining is calculated automatically.")
 
 for index, row in enumerate(st.session_state.expenses):
     with st.container(key=f"expense_row_{index}", border=True):
-        cols = st.columns([2.5, 1.5, 1.5, 1.8, 2.2, 0.45], vertical_alignment="bottom")
+        cols = st.columns([2.5, 1.5, 1.5, 1.8, 2.2, 0.38, 0.38, 0.38], vertical_alignment="bottom")
         row["name"] = cols[0].text_input("Expense", value=row["name"], key=f"name_{index}")
         row["total"] = cols[1].number_input("Total", min_value=None, value=float(row["total"]), step=100.0, key=f"total_{index}")
         row["paid"] = cols[2].number_input("Paid", min_value=None, value=float(row["paid"]), step=100.0, key=f"paid_{index}")
         cols[3].markdown(f"<div class='remaining-label'>Remaining</div><div class='remaining'>{mad(float(row['total']) - float(row['paid']))}</div>", unsafe_allow_html=True)
         row["notes"] = cols[4].text_input("Notes", value=row["notes"], key=f"notes_{index}")
-        if cols[5].button("×", key=f"delete_{index}", help="Delete this expense"):
+        if cols[5].button("↑", key=f"up_{index}", help="Move up", disabled=index == 0):
+            move_expense(index, -1)
+            save_expenses()
+            st.rerun()
+        if cols[6].button("↓", key=f"down_{index}", help="Move down", disabled=index == len(st.session_state.expenses) - 1):
+            move_expense(index, 1)
+            save_expenses()
+            st.rerun()
+        if cols[7].button("×", key=f"delete_{index}", help="Delete this expense"):
             delete_expense(index)
             save_expenses()
             st.rerun()
@@ -215,8 +231,8 @@ st.markdown("""
 :root { --canvas:#0d0d0f; --surface:#171719; --surface-2:#1d1d20; --ink:#f4f4f5; --muted:#929298; --line:#2b2b30; --accent:#c7f36b; --accent-ink:#182000; --danger:#ff8178; }
 .stApp { background:var(--canvas); color:var(--ink); }
 .block-container { max-width:1120px; padding:1.6rem 2rem 5rem; }
-[data-testid="stHeader"] { background:transparent; }
-[data-testid="stSidebar"] { display:none; }
+[data-testid="stHeader"] { background:transparent; }`r`n[data-testid="stSidebar"] > div:first-child { padding:1.5rem 1.1rem; }`r`n[data-testid="stSidebar"] h2 { font-size:1.15rem !important; }
+[data-testid="stSidebar"] { display:block; background:#111113; border-right:1px solid var(--line); }
 .app-wordmark { color:var(--ink); font-size:1.05rem; font-weight:700; letter-spacing:-.025em; padding-top:.2rem; }
 .app-wordmark span { color:var(--muted); font-weight:500; }
 h1 { color:var(--ink) !important; font-size:clamp(3rem,8vw,6.2rem) !important; letter-spacing:-.085em; line-height:.9 !important; margin:4.75rem 0 .8rem !important; }
@@ -238,8 +254,8 @@ input { color:var(--ink) !important; caret-color:var(--accent); }
 [class*="st-key-expense_row_"] { margin:0; border:1px solid var(--line) !important; border-radius:12px !important; background:var(--surface); }
 [class*="st-key-expense_row_"] > div { padding:1rem 1.05rem .85rem; }
 [class*="st-key-expense_row_"] [data-testid="stHorizontalBlock"] { gap:.8rem; align-items:end; }
-[class*="st-key-expense_row_"] .stButton > button { min-width:2.35rem; width:2.35rem; padding:0; border:0; background:transparent; color:var(--danger); font-size:1.5rem; line-height:1; }
-[class*="st-key-expense_row_"] .stButton > button:hover { background:#3a2020; border:0; color:#ffaaa4; }
+[class*="st-key-expense_row_"] .stButton > button { min-width:2.35rem; width:2.35rem; padding:0; border:0; background:transparent; color:var(--muted); font-size:1.25rem; line-height:1; }`r`n[class*="st-key-expense_row_"] .stButton > button:hover { background:var(--surface-2); border:0; color:var(--ink); }`r`n[class*="st-key-expense_row_"] .stButton:last-child > button { color:var(--danger); font-size:1.5rem; }
+[class*="st-key-expense_row_"] .stButton:last-child > button:hover { background:#3a2020; border:0; color:#ffaaa4; }
 .remaining-label { color:var(--muted); font-size:.7rem; font-weight:650; letter-spacing:.02em; margin:0 0 .42rem; }
 .remaining { padding:.62rem .75rem; min-height:2.45rem; border:1px solid #39452a; border-radius:7px; background:#202817; color:var(--accent); font-weight:750; font-variant-numeric:tabular-nums; }
 hr { border-color:var(--line); }
@@ -253,7 +269,7 @@ hr { border-color:var(--line); }
   [data-testid="stMetric"] { padding:.85rem 0 1rem; }
   [data-testid="stMetricValue"] { font-size:1.65rem; }
   [class*="st-key-expense_row_"] > div { padding:.9rem .8rem .75rem; }
-  [class*="st-key-expense_row_"] [data-testid="stHorizontalBlock"] { display:grid !important; grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important; gap:.6rem .7rem; }
+  [class*="st-key-expense_row_"] [data-testid="stHorizontalBlock"] { display:grid !important; grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto auto auto !important; gap:.6rem .7rem; }
   [class*="st-key-expense_row_"] [data-testid="stHorizontalBlock"] > [data-testid="column"] { width:auto !important; flex:none !important; min-width:0 !important; }
   [class*="st-key-expense_row_"] [data-testid="stHorizontalBlock"] > [data-testid="column"]:first-child,[class*="st-key-expense_row_"] [data-testid="stHorizontalBlock"] > [data-testid="column"]:nth-child(5) { grid-column:1 / -1; }
   [class*="st-key-expense_row_"] .stButton > button { margin-top:1.65rem; }
@@ -261,6 +277,7 @@ hr { border-color:var(--line); }
 @media (prefers-reduced-motion:reduce) { .stButton > button { transition:none; } }
 </style>
 """, unsafe_allow_html=True)
+
 
 
 
