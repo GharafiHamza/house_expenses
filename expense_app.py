@@ -231,7 +231,9 @@ st.markdown("""
 :root { --canvas:#0d0d0f; --surface:#171719; --surface-2:#1d1d20; --ink:#f4f4f5; --muted:#929298; --line:#2b2b30; --accent:#c7f36b; --accent-ink:#182000; --danger:#ff8178; }
 .stApp { background:var(--canvas); color:var(--ink); }
 .block-container { max-width:1120px; padding:1.6rem 2rem 5rem; }
-[data-testid="stHeader"] { background:transparent; }`r`n[data-testid="stSidebar"] > div:first-child { padding:1.5rem 1.1rem; }`r`n[data-testid="stSidebar"] h2 { font-size:1.15rem !important; }
+[data-testid="stHeader"] { background:transparent; }
+[data-testid="stSidebar"] > div:first-child { padding:1.5rem 1.1rem; }
+[data-testid="stSidebar"] h2 { font-size:1.15rem !important; }
 [data-testid="stSidebar"] { display:block; background:#111113; border-right:1px solid var(--line); }
 .app-wordmark { color:var(--ink); font-size:1.05rem; font-weight:700; letter-spacing:-.025em; padding-top:.2rem; }
 .app-wordmark span { color:var(--muted); font-weight:500; }
@@ -254,7 +256,9 @@ input { color:var(--ink) !important; caret-color:var(--accent); }
 [class*="st-key-expense_row_"] { margin:0; border:1px solid var(--line) !important; border-radius:12px !important; background:var(--surface); }
 [class*="st-key-expense_row_"] > div { padding:1rem 1.05rem .85rem; }
 [class*="st-key-expense_row_"] [data-testid="stHorizontalBlock"] { gap:.8rem; align-items:end; }
-[class*="st-key-expense_row_"] .stButton > button { min-width:2.35rem; width:2.35rem; padding:0; border:0; background:transparent; color:var(--muted); font-size:1.25rem; line-height:1; }`r`n[class*="st-key-expense_row_"] .stButton > button:hover { background:var(--surface-2); border:0; color:var(--ink); }`r`n[class*="st-key-expense_row_"] .stButton:last-child > button { color:var(--danger); font-size:1.5rem; }
+[class*="st-key-expense_row_"] .stButton > button { min-width:2.35rem; width:2.35rem; padding:0; border:0; background:transparent; color:var(--muted); font-size:1.25rem; line-height:1; }
+[class*="st-key-expense_row_"] .stButton > button:hover { background:var(--surface-2); border:0; color:var(--ink); }
+[class*="st-key-expense_row_"] .stButton:last-child > button { color:var(--danger); font-size:1.5rem; }
 [class*="st-key-expense_row_"] .stButton:last-child > button:hover { background:#3a2020; border:0; color:#ffaaa4; }
 .remaining-label { color:var(--muted); font-size:.7rem; font-weight:650; letter-spacing:.02em; margin:0 0 .42rem; }
 .remaining { padding:.62rem .75rem; min-height:2.45rem; border:1px solid #39452a; border-radius:7px; background:#202817; color:var(--accent); font-weight:750; font-variant-numeric:tabular-nums; }
@@ -277,6 +281,7 @@ hr { border-color:var(--line); }
 @media (prefers-reduced-motion:reduce) { .stButton > button { transition:none; } }
 </style>
 """, unsafe_allow_html=True)
+
 
 
 
